@@ -31,12 +31,13 @@ class RUCaptchaThreading(threading.Thread):
             url = "http://rucaptcha.com/res.php?key={apikey}&action=get&id={captcha_id}".format(apikey=self.__apikey, captcha_id=captcha_id)
             r = requests.get(url)
             if r.status_code == 200:
-                if "CAPCHA_NOT_READY" in r.content:
+                if b"CAPCHA_NOT_READY" in r.content:
                     print("Capcha not ready.")
                     queue.append(item)
-                elif "|" in r.content:
+                elif b"|" in r.content:
                     code, value = r.content.split("|", 1)
                     if code == "OK":
+                        value=value.decode("utf-8") 
                         item.set_value(value)
                         item.ready()
                     else:
@@ -107,6 +108,7 @@ class RUCaptcha(object):
     def __check_response(self, content):
         result = None
         if content is not None:
+            content=content.decode("utf-8")
             if "|" in content:
                 code, captcha_id = content.split('|', 1)
                 if code == "OK":
